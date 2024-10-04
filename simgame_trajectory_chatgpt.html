@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cannonball Simulation</title>
+  <style>
+    canvas {
+      background-color: #eef;
+      border: 1px solid black;
+      display: block;
+      margin: 20px auto;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    label {
+      margin: 10px;
+    }
+    input {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Launch the Cannonball!</h1>
+
+  <label for="angle">Angle: 
+    <input type="range" id="angle" min="0" max="90" value="45">
+    <span id="angleValue">45</span>°
+  </label>
+  <br>
+
+  <label for="force">Force: 
+    <input type="range" id="force" min="1" max="100" value="50">
+    <span id="forceValue">50</span>
+  </label>
+  <br>
+
+  <button id="launchBtn">Launch</button>
+
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let angleInput = document.getElementById("angle");
+    let forceInput = document.getElementById("force");
+    let launchBtn = document.getElementById("launchBtn");
+
+    const gravity = 9.8;
+    let ballX, ballY, velocityX, velocityY, time;
+    let cannonAngle = 45;
+
+    // Load the cannon image
+    const cannonImage = new Image();
+    cannonImage.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Cannon_simple_vector.svg/1200px-Cannon_simple_vector.svg.png'; // Simple cannon image
+
+    // Display angle and force values in real time
+    angleInput.addEventListener("input", () => {
+      document.getElementById("angleValue").textContent = angleInput.value;
+      cannonAngle = angleInput.value;
+      drawCannon();
+    });
+
+    forceInput.addEventListener("input", () => {
+      document.getElementById("forceValue").textContent = forceInput.value;
+    });
+
+    launchBtn.addEventListener("click", () => {
+      // Reset the ball's position
+      ballX = 50;
+      ballY = canvas.height - 50;
+
+      // Convert angle to radians
+      let angle = cannonAngle * (Math.PI / 180);
+      let force = forceInput.value;
+
+      // Calculate initial velocity components
+      velocityX = force * Math.cos(angle);
+      velocityY = -force * Math.sin(angle);
+      time = 0;
+
+      // Start the simulation
+      requestAnimationFrame(update);
+    });
+
+    // Draw the cannon at the current angle
+    function drawCannon() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(50, canvas.height - 50); // Cannon pivot point
+      ctx.rotate(-cannonAngle * Math.PI / 180); // Rotate the cannon
+      ctx.drawImage(cannonImage, -50, -30, 100, 60); // Draw the cannon
+      ctx.restore();
+    }
+
+    // Ball movement
+    function update() {
+      time += 0.05;
+
+      // Calculate the ball's new position
+      ballX += velocityX;
+      ballY += velocityY + (0.5 * gravity * time * time);
+
+      // Clear the canvas and redraw the cannon
+      drawCannon();
+
+      // Draw the ball
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, 10, 0, Math.PI * 2);
+      ctx.fillStyle = "black";
+      ctx.fill();
+
+      // Stop if the ball hits the ground
+      if (ballY < canvas.height - 10) {
+        requestAnimationFrame(update);
+      }
+    }
+
+    // Draw initial cannon
+    cannonImage.onload = function() {
+      drawCannon();
+    };
+  </script>
+
+</body>
+</html>
